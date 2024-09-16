@@ -5,7 +5,7 @@
 #include "Wire.h"
 #endif
 #define DEBUG 1 //Set to 0 if you don't want to jam you serial port by debugging
-#define BLENDER_3D //Don't know why they are given this didn't waste time for understating it
+#define BLENDER_3D 
 extern TwoWire Wire1; //externing another i2c wire protocol
 MPU6050 MPU_A(0x69,&Wire);
 MPU6050 MPU_B(0x68,&Wire);
@@ -21,7 +21,7 @@ bool mpuD_dmp_ready = false;
 /* Sensor connection status */
 uint8_t mpuA_connected;
 uint8_t mpuB_connected;
-//
+
 uint8_t mpuC_connected;
 uint8_t mpuD_connected;
 
@@ -29,7 +29,7 @@ uint8_t mpuD_connected;
 /* Sensor interrupt status */
 uint8_t  mpuA_int_status;
 uint8_t  mpuB_int_status;
-//
+
 uint8_t  mpuC_int_status;
 uint8_t  mpuD_int_status;
 
@@ -37,21 +37,21 @@ uint8_t  mpuD_int_status;
 /* Sensor DMP status */
 uint8_t  mpuA_dma_status;
 uint8_t  mpuB_dma_status;
-//
+
 uint8_t  mpuC_dma_status;
 uint8_t  mpuD_dma_status;
 
 /* Sensor packet size */
 uint16_t mpuA_packet_size;
 uint16_t mpuB_packet_size;
-//
+
 uint16_t mpuC_packet_size;
 uint16_t mpuD_packet_size;
 
 /* Sensor packet size */
 uint16_t mpuA_fifo_count;
 uint16_t mpuB_fifo_count;
-//
+
 uint16_t mpuC_fifo_count;
 uint16_t mpuD_fifo_count;
 
@@ -60,21 +60,21 @@ uint16_t mpuD_fifo_count;
 /* Sensor FIFO buffers */
 uint8_t  mpuA_fifo_buffer[64];
 uint8_t  mpuB_fifo_buffer[64];
-//
+
 uint8_t  mpuC_fifo_buffer[64];
 uint8_t  mpuD_fifo_buffer[64];
 
 /* Sensor interrupt variables */
 volatile bool mpuA_interrupt = false;
 volatile bool mpuB_interrupt = false;
-//
+
 volatile bool mpuC_interrupt = false;
 volatile bool mpuD_interrupt = false;
 
 /* Sensor read data */
 volatile bool mpuA_read_data = false;
 volatile bool mpuB_read_data = false;
-//
+
 volatile bool mpuC_read_data = false;
 volatile bool mpuD_read_data = false;
 
@@ -164,7 +164,7 @@ unsigned long reset_prev_time = 0;
 unsigned long reset_interval = 20000; //20s
 
 
-//a useless function as of now
+
 void dmpDataReady()
 {
   //    mpuA_int_status = MPU_A.getIntStatus();
@@ -181,7 +181,7 @@ void dmpDataReady()
   //    }
 }
 
-//checks whether all the sensors are properly connected or not
+//Verify Sensor Connections 
 void check_sensor_connections()
 {
   /* Checking sensor connections */
