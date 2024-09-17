@@ -1,12 +1,36 @@
 #include "I2Cdev.h"
 #include "MPU6050_6Axis_MotionApps20.h"
+#include <WiFi.h>
+#include <NetworkUdp.h>
+
 
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
 #include "Wire.h"
 #endif
 #define DEBUG 1 //Set to 0 if you don't want to jam you serial port by debugging
 #define BLENDER_3D //Don't know why they are given this didn't waste time for understating it
-extern TwoWire Wire1; //externing another i2c wire protocol
+
+//-----------------------------------
+//WiFi
+// WiFi network name and password:
+const char *networkName = "FTTH-F04B";
+const char *networkPswd = "pampackal@123";
+
+//IP address to send UDP data to:
+// either use the ip address of the server or
+// a network broadcast address
+const char *udpAddress = "192.168.1.12";
+const int udpPort = 3333;
+
+//Are we currently connected?
+boolean connected = false;
+
+//The udp library class
+NetworkUDP udp;
+//-----------------------------------
+
+
+extern TwoWire Wire1;
 MPU6050 MPU_A(0x69,&Wire);
 MPU6050 MPU_B(0x68,&Wire);
 MPU6050 MPU_C(0x68,&Wire1);
@@ -523,6 +547,14 @@ void sensor_send_data_to_pc()
     
 #endif
 
+    if (connected) {
+      //Send a packet
+      udp.beginPacket(udpAddress, udpPort);
+      // udp.printf("Seconds since boot: %lu", millis() / 1000);
+      udp.write(sensor_data_packet,41);
+      udp.endPacket();
+    }
+
     mpuA_read_data = false;
     mpuB_read_data = false;
     mpuC_read_data = false;
@@ -584,6 +616,11 @@ void setup() {
 
     }
   }
+  //WiFi
+  //-------------------------------------
+  //Connect to the WiFi network
+  connectToWiFi(networkName, networkPswd);
+  //-------------------------------------
 }
 
 void loop() {
@@ -733,5 +770,39 @@ void loop() {
     MPU_D.setXGyroOffset(mpu_d_X_gyro_offset);
     MPU_D.setYGyroOffset(mpu_d_Y_gyro_offset);
     MPU_D.setZGyroOffset(mpu_d_Z_gyro_offset);
+  }
+}
+
+void connectToWiFi(const char *ssid, const char *pwd) {
+  Serial.println("Connecting to WiFi network: " + String(ssid));
+
+  // delete old config
+  WiFi.disconnect(true);
+  //register event handler
+  WiFi.onEvent(WiFiEvent);  // Will call WiFiEvent() from another thread.
+
+  //Initiate connection
+  WiFi.begin(ssid, pwd);
+
+  Serial.println("Waiting for WIFI connection...");
+}
+
+// WARNING: WiFiEvent is called from a separate FreeRTOS task (thread)!
+void WiFiEvent(WiFiEvent_t event) {
+  switch (event) {
+    case ARDUINO_EVENT_WIFI_STA_GOT_IP:
+      //When connected set
+      Serial.print("WiFi connected! IP address: ");
+      Serial.println(WiFi.localIP());
+      //initializes the UDP state
+      //This initializes the transfer buffer
+      udp.begin(WiFi.localIP(), udpPort);
+      connected = true;
+      break;
+    case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:
+      Serial.println("WiFi lost connection");
+      connected = false;
+      break;
+    default: break;
   }
 }
